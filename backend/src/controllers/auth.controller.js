@@ -107,13 +107,17 @@ export async function login(req, res) {
     const refreshToken = generateRefreshToken(user);
     const csrfToken = generateCsrfToken();
 
+    const isProd = process.env.NODE_ENV === "production";
+    const sameSite = isProd ? "none" : "lax";
+    const secure = isProd;
+
     // ===============================
     // ACCESS TOKEN COOKIE
     // ===============================
     res.cookie("accessToken", accessToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      secure,
+      sameSite,
       path: "/",
       maxAge: 15 * 60 * 1000,
     });
@@ -123,8 +127,8 @@ export async function login(req, res) {
     // ===============================
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      secure,
+      sameSite,
       path: "/",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
@@ -134,8 +138,8 @@ export async function login(req, res) {
     // ===============================
     res.cookie("csrfToken", csrfToken, {
       httpOnly: false,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      secure,
+      sameSite,
       path: "/",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
@@ -205,11 +209,15 @@ export async function refresh(req, res) {
     const newRefreshToken = generateRefreshToken(user);
     const newCsrfToken = generateCsrfToken();
 
+    const isProd = process.env.NODE_ENV === "production";
+    const sameSite = isProd ? "none" : "lax";
+    const secure = isProd;
+
     // Replace access token
     res.cookie("accessToken", newAccessToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      secure,
+      sameSite,
       path: "/",
       maxAge: 15 * 60 * 1000,
     });
@@ -217,8 +225,8 @@ export async function refresh(req, res) {
     // Replace refresh token
     res.cookie("refreshToken", newRefreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      secure,
+      sameSite,
       path: "/",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
@@ -226,8 +234,8 @@ export async function refresh(req, res) {
     // Replace CSRF token
     res.cookie("csrfToken", newCsrfToken, {
       httpOnly: false,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      secure,
+      sameSite,
       path: "/",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
@@ -240,25 +248,29 @@ export async function refresh(req, res) {
   } catch (error) {
     console.error("Refresh token error:", error);
 
+    const isProd = process.env.NODE_ENV === "production";
+    const sameSite = isProd ? "none" : "lax";
+    const secure = isProd;
+
     // Clear client cookies on failure to prevent stuck auth cycles
     res.clearCookie("accessToken", {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      secure,
+      sameSite,
       path: "/",
     });
 
     res.clearCookie("refreshToken", {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      secure,
+      sameSite,
       path: "/",
     });
 
     res.clearCookie("csrfToken", {
       httpOnly: false,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      secure,
+      sameSite,
       path: "/",
     });
 
@@ -276,24 +288,28 @@ export async function refresh(req, res) {
 
 export async function logout(req, res) {
   try {
+    const isProd = process.env.NODE_ENV === "production";
+    const sameSite = isProd ? "none" : "lax";
+    const secure = isProd;
+
     res.clearCookie("accessToken", {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      secure,
+      sameSite,
       path: "/",
     });
 
     res.clearCookie("refreshToken", {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      secure,
+      sameSite,
       path: "/",
     });
 
     res.clearCookie("csrfToken", {
       httpOnly: false,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      secure,
+      sameSite,
       path: "/",
     });
 
