@@ -32,7 +32,14 @@ export function initSocket(server) {
     try {
       const cookieHeader = socket.handshake.headers.cookie;
       const cookies = parseCookies(cookieHeader);
-      const token = cookies.accessToken;
+      let token = cookies.accessToken;
+
+      if (!token && socket.handshake.auth?.token) {
+        token = socket.handshake.auth.token;
+      }
+      if (!token && socket.handshake.headers?.authorization?.startsWith("Bearer ")) {
+        token = socket.handshake.headers.authorization.split(" ")[1];
+      }
 
       if (!token) {
         return next(new Error("Authentication error: Access token missing"));

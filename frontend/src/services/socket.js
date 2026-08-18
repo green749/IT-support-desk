@@ -1,5 +1,6 @@
 import { io } from "socket.io-client";
 import { authService } from "./auth.service";
+import { getAccessToken } from "./api";
 
 const rawSocketEnv = (import.meta.env.VITE_SOCKET_URL || import.meta.env.VITE_API_URL || 'http://localhost:5000').trim().replace(/\/+$/, '')
 const SOCKET_URL = rawSocketEnv.replace(/\/api$/, '')
@@ -9,7 +10,11 @@ let isRefreshing = false;
 
 export const socketService = {
   connect() {
+    const token = getAccessToken();
     if (socket) {
+      if (token) {
+        socket.auth = { token };
+      }
       if (!socket.connected) {
         socket.connect();
       }
@@ -19,6 +24,7 @@ export const socketService = {
     socket = io(SOCKET_URL, {
       withCredentials: true,
       autoConnect: false,
+      auth: token ? { token } : {},
       transports: ["websocket"],
     });
 

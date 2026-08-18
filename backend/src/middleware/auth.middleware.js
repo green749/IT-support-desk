@@ -3,7 +3,11 @@ import User from "../models/User.js";
 
 export async function authenticateToken(req, res, next) {
   try {
-    const accessToken = req.cookies.accessToken;
+    let accessToken = req.cookies.accessToken;
+
+    if (!accessToken && req.headers.authorization?.startsWith("Bearer ")) {
+      accessToken = req.headers.authorization.split(" ")[1];
+    }
 
     if (!accessToken) {
       return res.status(401).json({

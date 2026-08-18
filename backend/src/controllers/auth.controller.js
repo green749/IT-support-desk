@@ -54,9 +54,14 @@ export async function register(req, res) {
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
+    const accessToken = generateAccessToken(user);
+    const refreshToken = generateRefreshToken(user);
+
     return res.status(201).json({
       success: true,
       message: "User registered successfully",
+      accessToken,
+      refreshToken,
       csrfToken,
       data: {
         id: user.id,
@@ -161,6 +166,8 @@ export async function login(req, res) {
     return res.status(200).json({
       success: true,
       message: "Login successful",
+      accessToken,
+      refreshToken,
       csrfToken,
       data: {
         id: user.id,
@@ -258,6 +265,8 @@ export async function refresh(req, res) {
     return res.status(200).json({
       success: true,
       message: "Tokens refreshed successfully",
+      accessToken: newAccessToken,
+      refreshToken: newRefreshToken,
       csrfToken: newCsrfToken,
     });
 
