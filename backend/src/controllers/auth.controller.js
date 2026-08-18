@@ -246,13 +246,21 @@ export async function refresh(req, res) {
     });
 
   } catch (error) {
-    console.error("Refresh token error:", error);
+    const isExpectedAuthFailure =
+      error.name === "JsonWebTokenError" ||
+      error.name === "TokenExpiredError" ||
+      error.message?.includes("jwt") ||
+      error.message?.includes("signature");
+
+    if (!isExpectedAuthFailure) {
+      console.error("Refresh token error:", error);
+    }
 
     const isProd = process.env.NODE_ENV === "production";
     const sameSite = isProd ? "none" : "lax";
     const secure = isProd;
 
-    // Clear client cookies on failure to prevent stuck auth cycles
+    // Clear invalid cookies
     res.clearCookie("accessToken", {
       httpOnly: true,
       secure,
@@ -276,7 +284,7 @@ export async function refresh(req, res) {
 
     return res.status(401).json({
       success: false,
-      message: "Invalid or expired refresh token",
+      message: "Session expired or invalid. Please log in again.",
     });
   }
 }
