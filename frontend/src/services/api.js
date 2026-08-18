@@ -1,4 +1,5 @@
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
+const rawEnvUrl = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').trim().replace(/\/+$/, '')
+const API_URL = rawEnvUrl.endsWith('/api') ? rawEnvUrl : `${rawEnvUrl}/api`
 
 function csrfToken() {
   return document.cookie.split('; ').find((row) => row.startsWith('csrfToken='))?.split('=')[1]
@@ -13,8 +14,9 @@ export async function api(path, options = {}, retried = false) {
   const headers = { ...(options.body ? { 'Content-Type': 'application/json' } : {}), ...options.headers }
   if (!['GET', 'HEAD', 'OPTIONS'].includes(method) && csrfToken()) headers['x-csrf-token'] = decodeURIComponent(csrfToken())
 
-  const response = await fetch(`${API_URL}${path}`, { ...options, method, headers, credentials: 'include' })
-  if (response.status === 401 && !retried && !path.startsWith('/auth/refresh') && !path.startsWith('/auth/login') && !path.startsWith('/auth/register')) {
+  const cleanPath = path.startsWith('/') ? path : `/${path}`
+  const response = await fetch(`${API_URL}${cleanPath}`, { ...options, method, headers, credentials: 'include' })
+  if (response.status === 401 && !retried && !cleanPath.startsWith('/auth/refresh') && !cleanPath.startsWith('/auth/login') && !cleanPath.startsWith('/auth/register')) {
     const refreshed = await fetch(`${API_URL}/auth/refresh`, {
       method: 'POST', credentials: 'include', headers: csrfToken() ? { 'x-csrf-token': decodeURIComponent(csrfToken()) } : {},
     })
