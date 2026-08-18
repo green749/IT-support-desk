@@ -41,9 +41,23 @@ export async function register(req, res) {
       passwordHash,
     });
 
+    const csrfToken = generateCsrfToken();
+    const isProd = process.env.NODE_ENV === "production";
+    const sameSite = isProd ? "none" : "lax";
+    const secure = isProd;
+
+    res.cookie("csrfToken", csrfToken, {
+      httpOnly: false,
+      secure,
+      sameSite,
+      path: "/",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
     return res.status(201).json({
       success: true,
       message: "User registered successfully",
+      csrfToken,
       data: {
         id: user.id,
         name: user.name,
@@ -147,6 +161,7 @@ export async function login(req, res) {
     return res.status(200).json({
       success: true,
       message: "Login successful",
+      csrfToken,
       data: {
         id: user.id,
         name: user.name,
@@ -243,6 +258,7 @@ export async function refresh(req, res) {
     return res.status(200).json({
       success: true,
       message: "Tokens refreshed successfully",
+      csrfToken: newCsrfToken,
     });
 
   } catch (error) {
